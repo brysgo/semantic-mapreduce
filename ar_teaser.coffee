@@ -137,19 +137,20 @@ class AbstractReact
     ###
     Runs all the single dependancy rules that follow from the input.
     ###
-    result = [ result ] unless Object::toString.call( result ) is '[object Array]'
-    output = {}
-    # Find and run exclusive dependants
-    for r in result
+    if Object::toString.call( result ) is '[object Array]'
+      return @extend( ( @map(rule, r) for r in result )... )
+    else
+      output = {}
+      # Find and run exclusive dependants
       for n, fn of @rules
         a = @arg_names( fn )
-        if a.length is 1 and rule in a
-          o = @run_rule( n, r )
-          o[ rule ] = r
+        if a.length is 1 and @lca_of_rule[ n ] is rule
+          o = @run_rule( n, result )
+          o[ rule ] = result
           o = @reduce( rule, o )
           output = @extend( output, o )
-    output[ rule ] ?= if ( result?.length is 1 ) then result[0] else result
-    return output
+      output[ rule ] ?= result
+      return output
    
 ###
 Run the AR example
