@@ -28,15 +28,22 @@ Abstract-React Example
 ###
 
 AR =
+  # in this case only one rule depends on our 'input' - a reserved rule
   word: (input) ->
     return input.split(' ')
+  # 'char' depends on 'word', and splits them up into individual charicters
   char: (word) ->
     return (c for c in word)
+  # 'vowel' depends on 'char' and returns a boolean
   vowel: (char) ->
-    return char in ['a','e','i','o','u']
+    return char.toLowerCase() in ['a','e','i','o','u']
+  # 'word_has_vowel' depends on 'word' and 'vowel'
   word_has_vowel: (word, vowel) ->
     # notice that vowel is a list of bools now
+    # this is because by the time the least common ancestor of 'word'
+    # and 'vowel' ('word') run, there are multiple values for 'vowel'
     return true in vowel
+  # even though 'input' is not used directly, it is included to change the LCA
   not_english: (input, word_has_vowel) ->
     return false in word_has_vowel
 
@@ -50,8 +57,10 @@ class AbstractReact
     ###
     Define shortcuts for running rules.
     ###
+    @lca_of_rule = {}
     for name, fn of @rules
       @[name] = ( args... ) => @run_rule( name, args )
+      @lca_of_rule[name] = @lca( @arg_names( fn )... )
   
   arg_names: ( func ) ->
     ###
@@ -69,7 +78,8 @@ class AbstractReact
     for o in objects
       for k, v of o
         result[k] ?= []
-        result[k].push(v)
+        v = [ v ] unless Object::toString.call( v ) is '[object Array]'
+        result[k] = result[k].concat(v...)
     return result
   
   lca: ( rules... ) =>
@@ -116,12 +126,9 @@ class AbstractReact
     ###
     for n, fn of @rules
       a = @arg_names( fn )
-      ready = ( a.length > 1 and rule is @lca(a...) )
       args = []
-      for i in a
-        ready &&= ( i of outputs )
-        args.push( outputs[i] )
-      if ready
+      args.push( ( outputs[i] for i in a )... )
+      if a.length > 1 and @lca_of_rule[ n ] is rule
         o = @run_rule( n, args )
         outputs = @extend( outputs, o )
     return outputs
@@ -150,3 +157,4 @@ Run the AR example
 
 obj = new AbstractReact(AR)
 obj.input( 'Hello I am an input string.' )
+obj.input( 'Hrllw y rm rn rnprt strng.')
