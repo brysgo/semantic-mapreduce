@@ -1,5 +1,5 @@
 ###
-# Copyright (c) 2012 Bryan Goldstein
+# Copyright (c) 2013 Bryan Goldstein
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -19,15 +19,16 @@
 # SOFTWARE.
 # ----
 #
-# Abstract-React is a neat little framework for mapreduce that lets you structure
-# your code a bit better than most basic map and reduce functions.
+# Funnel.js is the natural evolution of map-reduce. The goal of Funnel is to
+# provide an elegant way to build large, scalable, reactive apps without
+# the need for magically scaling databases or super ninja skills.
 ###
-
+ 
 ###
-Abstract-React Example
+Funnel.js Example
 ###
-
-AR =
+ 
+english_learner =
   # in this case only one rule depends on our 'input' - a reserved rule
   word: (input) ->
     return input.split(' ')
@@ -42,21 +43,20 @@ AR =
     # notice that vowel is a list of bools now
     # this is because by the time the least common ancestor of 'word'
     # and 'vowel' ('word') run, there are multiple values for 'vowel'
-    return true in vowel
-  # even though 'input' is not used directly, it is included to change the LCA
-  not_english: (input, word_has_vowel) ->
-    return false in word_has_vowel
-
+    return true in vowel 
 ###
-Abstract-React Serial Implementation
+Experimental Serial Implementation of Funnel.js API
 ###
-
-class AbstractReact
+ 
+class Funnel
   
   constructor: ( @rules ) ->
     ###
     Define shortcuts for running rules.
     ###
+    @_compile()
+  
+  _compile: =>
     @lca_of_rule = {}
     for name, fn of @rules
       @[name] = ( args... ) => @run_rule( name, args )
@@ -72,7 +72,7 @@ class AbstractReact
   
   extend: ( objects... ) ->
     ###
-    Helper for extending objects.
+    Overrides coffeescript functionality.
     ###
     result = {}
     for o in objects
@@ -81,6 +81,14 @@ class AbstractReact
         v = [ v ] unless Object::toString.call( v ) is '[object Array]'
         result[k] = result[k].concat(v...)
     return result
+  
+  listen: ( fn ) =>
+    ###
+    Adds an anonymous function to the hash, used for hooking up result to a view.
+    ###
+    key = "_#{Object.keys(@rules).length}"
+    @rules.key = fn
+    @_compile()
   
   lca: ( rules... ) =>
     ###
@@ -104,19 +112,19 @@ class AbstractReact
         one_tmp =  [].concat( (@arg_names(@rules[i]) for i in one_tmp)... )
         two_tmp =  [].concat( (@arg_names(@rules[i]) for i in two_tmp)... )
         break if undefined in one_tmp and undefined in two_tmp
-
+ 
   run_rule: ( rule, args ) =>
     ###
-    Run a rule through our fake map-reduce implementation of AR.
+    Run a rule through our experimental implementation.
     ###
     args = [ args ] unless Object::toString.call( args ) is '[object Array]'
     result = @rules[ rule ]( args... )
-    console.log( "#{rule} was run with #{args} and returned #{result}." )
+    # console.log( "#{rule} was run with #{args} and returned #{result}." )
     return @map( rule, result )
-
+ 
   input: ( args... ) =>
     ###
-    Run Abstract-React with the given input.
+    Run with the given input.
     ###
     return @map( 'input', args )
   
@@ -153,9 +161,19 @@ class AbstractReact
       return output
    
 ###
-Run the AR example
+Run the example
 ###
 
-obj = new AbstractReact(AR)
+# Create our funnel
+obj = new Funnel(english_learner)
+
+# Listen to the event we are interested in
+obj.listen( (input, word_has_vowel) ->
+  _not = ''
+  _not = "not" if false in word_has_vowel
+  console.log( "The sentence '#{input}' is #{_not} english!" )
+)
+
+# Send the input
 obj.input( 'Hello I am an input string.' )
-obj.input( 'Hrllw y rm rn rnprt strng.')
+obj.input( 'Hrllw y rm rn rnprt strng.' )
