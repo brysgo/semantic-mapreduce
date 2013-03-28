@@ -70,18 +70,6 @@ class Funnel
     params = reg.exec(func)
     return params[1].split(/\s*,\s*/) if params
   
-  extend: ( objects... ) ->
-    ###
-    Overrides coffeescript functionality.
-    ###
-    result = {}
-    for o in objects
-      for k, v of o
-        result[k] ?= []
-        v = [ v ] unless Object::toString.call( v ) is '[object Array]'
-        result[k] = result[k].concat(v...)
-    return result
-  
   listen: ( fn ) =>
     ###
     Adds an anonymous function to the hash, used for hooking up result to a view.
@@ -127,6 +115,15 @@ class Funnel
     Run with the given input.
     ###
     return @map( 'input', args )
+    
+  _extend: ( objects... ) ->
+    result = {}
+    for o in objects
+      for k, v of o
+        result[k] ?= []
+        v = [ v ] unless Object::toString.call( v ) is '[object Array]'
+        result[k] = result[k].concat(v...)
+    return result
   
   reduce: ( rule, outputs ) =>
     ###
@@ -138,7 +135,7 @@ class Funnel
       args.push( ( outputs[i] for i in a )... )
       if a.length > 1 and @lca_of_rule[ n ] is rule
         o = @run_rule( n, args )
-        outputs = @extend( outputs, o )
+        outputs = @_extend( outputs, o )
     return outputs
   
   map: ( rule, result ) =>
@@ -146,7 +143,7 @@ class Funnel
     Runs all the single dependancy rules that follow from the input.
     ###
     if Object::toString.call( result ) is '[object Array]'
-      return @extend( ( @map(rule, r) for r in result )... )
+      return @_extend( ( @map(rule, r) for r in result )... )
     else
       output = {}
       # Find and run exclusive dependants
@@ -156,24 +153,24 @@ class Funnel
           o = @run_rule( n, result )
           o[ rule ] = result
           o = @reduce( rule, o )
-          output = @extend( output, o )
+          output = @_extend( output, o )
       output[ rule ] ?= result
       return output
    
 ###
 Run the example
 ###
-
+ 
 # Create our funnel
 obj = new Funnel(english_learner)
-
+ 
 # Listen to the event we are interested in
 obj.listen( (input, word_has_vowel) ->
   _not = ''
   _not = "not" if false in word_has_vowel
   console.log( "The sentence '#{input}' is #{_not} english!" )
 )
-
+ 
 # Send the input
 obj.input( 'Hello I am an input string.' )
 obj.input( 'Hrllw y rm rn rnprt strng.' )
