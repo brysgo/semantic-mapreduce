@@ -1,8 +1,9 @@
 Funnel.js
 ======
 
-Funnel.js is a funky hybrid between an event loop and a map-reduce implementation. 
-Right now only a rudimentary serial implementation exists, but the ambition is to someday be able to write everything in Funnel.
+Funnel.js is a funky hybrid between an event loop and a map-reduce implementation.
+The main use-case is to untangle complex buisness logic into something far more simple and expressive than our massive OO code bases usually end up being.
+Right now only a rudimentary serial implementation exists, but the ambition is to someday have it scale across machines and handle things like server-client communication and persistance.
 
 ## Design Goals
 
