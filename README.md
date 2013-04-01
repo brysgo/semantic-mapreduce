@@ -30,7 +30,9 @@ I am a strong believer in the agile process, and to me, it is extremely valuable
 
 ### Try it out
 
-You can play with it [here](http://jsbin.com/onuweb/1/edit).
+Check out the documentation [here](https://c9.io/brysgo/funnel/workspace/docs/funnel.html).
+
+The code is also available in Cloud9 [here](https://c9.io/brysgo/funnel)
 
 ```coffeescript
 obj.input( 'pass a string to the existing object to test the example' )
