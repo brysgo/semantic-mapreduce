@@ -9,7 +9,13 @@ task 'test', -> require('./test').run()
 task 'bench', -> require('./benchmark').run()
 
 task 'docs', ->
-  run 'docco --layout \'linear\' src/funnel.litcoffee'
+  run('docco --layout \'linear\' src/funnel.litcoffee', ->
+    run('git checkout gh-pages', ->
+      run('git checkout master -- docs', ->
+        run('git commit -m\'Generate the docs\'')
+      )
+    )
+  )
 
 run = (args...) ->
   for a in args

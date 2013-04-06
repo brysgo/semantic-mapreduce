@@ -7,6 +7,8 @@ Right now only a rudimentary serial implementation exists, but the ambition is t
 
 ## Design Goals
 
+The design goals below all yeild to the main goal of making large scale data driven apps dead simple to write and maintain. That being said, to make it easier to get there a few principles must be followed as closely as possible.
+
 ### Simplicity
 
 I will probably use the term scalable simplicity a lot, the reason for this is that there are a ton of
@@ -30,9 +32,7 @@ I am a strong believer in the agile process, and to me, it is extremely valuable
 
 ### Try it out
 
-Check out the documentation [here](https://c9.io/brysgo/funnel/workspace/docs/funnel.html).
-
-The code is also available in Cloud9 [here](https://c9.io/brysgo/funnel)
+Check out the documentation [here](http://brysgo.github.io/funnel/).
 
 ```coffeescript
 obj.input( 'pass a string to the existing object to test the example' )
