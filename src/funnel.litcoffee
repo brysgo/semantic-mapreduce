@@ -188,4 +188,5 @@ call the rule once with each of its items.
 Export Funnel for all to use! It may be worth figuring out how to hide private
 functionality.
     
+    @Funnel = Funnel
     module.exports = Funnel

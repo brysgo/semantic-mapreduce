@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Jasmine Spec Runner</title>
+  <meta charset="utf-8">
+  <link rel="shortcut icon" type="image/png" href="jasmine-1.1.0/jasmine_favicon.png">
+  <link rel="stylesheet" type="text/css" href="jasmine-1.1.0/jasmine.css">
+  <script type="text/javascript" src="coffee-script.js"></script>
+  <script type="text/javascript" src="jasmine-1.1.0/jasmine.js"></script>
+  <script type="text/javascript" src="jasmine-1.1.0/jasmine-html.js"></script>
+
+  <!-- include source files here... -->
+  <script type="text/javascript" src="funnel.js"></script>
+
+  <!-- include spec files here... -->
+  <!-- <script type="text/coffeescript" src="../spec/SpecHelper.coffee"></script> -->
+  <script type="text/coffeescript" src="../spec/BasicSpec.coffee"></script>
+
+  <script type="text/coffeescript">
+    jasmineEnv = jasmine.getEnv()
+    jasmineEnv.updateInterval = 1000
+    htmlReporter = new jasmine.HtmlReporter()
+    jasmineEnv.addReporter htmlReporter
+    jasmineEnv.specFilter = (spec) ->
+      htmlReporter.specFilter spec
+
+    jasmineEnv.execute()
+  </script>
+
+
+</head>
+
+<body>
+</body>
+</html>

@@ -4,9 +4,9 @@ log = console.log
 task 'build', ->
   run 'coffee -o lib -c src/*.*coffee'
 
-task 'test', -> require('./test').run()
-
-task 'bench', -> require('./benchmark').run()
+task 'spec', ->
+  run('python -m SimpleHTTPServer')
+  run('open http://localhost:8000/lib/SpecRunner.html')
 
 task 'docs', ->
   run('docco --layout \'linear\' src/funnel.litcoffee', ->
