@@ -87,7 +87,7 @@ For example:
 ```coffeescript
   rulename: (dep0, $keyeddep1, $keyeddep2, self) ->
 ```
-After this rule runs, its result will be stored in a key-value store with the key `rulename_keyeddep1_keyeddep2`
+After this rule runs, its result will be stored in a key-value store with the key `rulename_#{keyeddep1}_#{keyeddep2}` (Where the #{} is to show string interpolation)
 
 Before the rule runs, a key-value query will check to see if the above key exists and use it as `self`.
 
