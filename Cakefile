@@ -8,12 +8,15 @@ task 'watch', ->
   run 'coffee --watch -o lib -c src/*.*coffee'
 
 task 'spec', ->
-  run('coffee --watch -o lib -c src/*.*coffee')
+  run('cake watch')
   run('python -m SimpleHTTPServer')
   run('open http://localhost:8000/lib/SpecRunner.html')
 
 task 'docs', ->
-  run 'docco --layout \'linear\' src/funnel.coffee', ->
+  run 'docco --layout \'linear\' src/funnel.coffee'
+
+task 'docs:commit', ->
+  run 'cake docs', ->
     run 'git add . && git commit -mWIP', ->
       run 'git checkout gh-pages', ->
         run 'git checkout master -- docs', ->

@@ -1,13 +1,33 @@
-## The Rule Class
 #
+# The Funnel Class
+# ----------------
+# This is where the API and some of the setup for the rules live.
+
+class Funnel
+  constructor: ( rules ) ->
+    rules.input = (arg) ->
+      @return arg
+    for name, fn of rules
+      rule = new @Rule( name, fn )
+      @[name] = ( args... ) -> rule.run( args )
+    @Rule.compile_all()
+    return
+
+  listen: ( fn ) =>
+    key = "_#{Object.keys(@Rule._rules).length}"
+    new @Rule(key, fn)
+    @Rule.compile_all()
+#
+# The Rule Class
+# --------------
 # The rule class is a singleton that is created for every new
 # rule definition. It computes and maintains information that
 # is essential for the Funnel runtime.
 
-class Rule
+class Funnel::Rule
 
   # Get a rule that is already defined
-  @get: ( name ) -> Rule._rules[name]
+  @get: ( name ) -> @_rules[name]
 
   # Allow other rules to register dependencies
   @on: ( dependencies, rule ) ->
@@ -21,22 +41,22 @@ class Rule
 
   # Clear all the rules to recompile
   @clear_all: ->
-    for name, rule of Rule._rules
+    for name, rule of @_rules
       rule._dependencies = undefined
       rule._passes = undefined
       rule._bound = undefined
 
   # Run the compile step
   @compile_all: ->
-    Rule.clear_all()
-    for name, rule of Rule._rules
-      Rule.on( rule.dependencies(), rule )
+    @clear_all()
+    for name, rule of @_rules
+      @on( rule.dependencies(), rule )
 
   # Construct a new rule
   # and save it as a singleton
   constructor: ( @name, @_fn ) ->
-    Rule._rules ?= {}
-    Rule._rules[@name] = this
+    @constructor._rules ?= {}
+    @constructor._rules[@name] = this
 
   # Get the rules dependancies from the function's code
   # and store it for later
@@ -45,7 +65,7 @@ class Rule
       fnStr = @_fn.toString()
       params = fnStr.slice(fnStr.indexOf('(')+1, fnStr.indexOf(')')).match(/([^\s,]+)/g)
       if params
-        @_dependencies = (Rule.get(p) for p in params)
+        @_dependencies = (@constructor.get(p) for p in params)
       @_dependencies = [] if !@_dependencies? or undefined in @_dependencies
     return @_dependencies
 
@@ -94,24 +114,6 @@ class Rule
     # Run the rule
     @_fn.apply( context, args )
 
-## The Funnel Class
-#
-# This is where the API and some of the setup for the rules live.
-
-class Funnel
-  constructor: ( @rules ) ->
-    @rules.input = (arg) -> 
-      @return arg
-    for name, fn of @rules
-      rule = new Rule( name, fn )
-      @[name] = ( args... ) -> rule.run( args )
-    Rule.compile_all()
-    return
-
-  listen: ( fn ) =>
-    key = "_#{Object.keys(@rules).length}"
-    new Rule(key, fn)
-    Rule.compile_all()
 
 #### Helpers
 
