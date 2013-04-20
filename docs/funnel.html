@@ -21,6 +21,31 @@
 
       
         
+        <h2>The Funnel Class</h2>
+
+        
+      
+        
+        <p>This is where the API and some of the setup for the rules live.</p>
+
+        
+          <div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">Funnel</span></span>
+  constructor: ( rules ) -&gt;
+    rules.<span class="function"><span class="title">input</span></span> = (arg) -&gt;
+      <span class="property">@return</span> arg
+    <span class="keyword">for</span> name, fn <span class="keyword">of</span> rules
+      rule = <span class="keyword">new</span> <span class="property">@Rule</span>( name, fn )
+      @[name] = ( args... ) -&gt; rule.run( args )
+    <span class="property">@Rule</span>.compile_all()
+    <span class="keyword">return</span>
+
+  listen: ( fn ) =&gt;
+    key = <span class="string">"_<span class="subst">#{Object.keys(@Rule._rules).length}</span>"</span>
+    <span class="keyword">new</span> <span class="property">@Rule</span>(key, fn)
+    <span class="property">@Rule</span>.compile_all()</pre></div>
+        
+      
+        
         <h2>The Rule Class</h2>
 
         
@@ -31,14 +56,14 @@ rule definition. It computes and maintains information that
 is essential for the Funnel runtime.</p>
 
         
-          <div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">Rule</span></span></pre></div>
+          <div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">Funnel</span>:</span>:Rule</pre></div>
         
       
         
         <p>Get a rule that is already defined</p>
 
         
-          <div class='highlight'><pre>  <span class="property">@get</span>: ( name ) -&gt; Rule._rules[name]</pre></div>
+          <div class='highlight'><pre>  <span class="property">@get</span>: ( name ) -&gt; <span class="property">@_rules</span>[name]</pre></div>
         
       
         
@@ -60,7 +85,7 @@ is essential for the Funnel runtime.</p>
 
         
           <div class='highlight'><pre>  <span class="property">@clear_all</span>: -&gt;
-    <span class="keyword">for</span> name, rule <span class="keyword">of</span> Rule._rules
+    <span class="keyword">for</span> name, rule <span class="keyword">of</span> <span class="property">@_rules</span>
       rule._dependencies = <span class="literal">undefined</span>
       rule._passes = <span class="literal">undefined</span>
       rule._bound = <span class="literal">undefined</span></pre></div>
@@ -71,9 +96,9 @@ is essential for the Funnel runtime.</p>
 
         
           <div class='highlight'><pre>  <span class="property">@compile_all</span>: -&gt;
-    Rule.clear_all()
-    <span class="keyword">for</span> name, rule <span class="keyword">of</span> Rule._rules
-      Rule.<span class="literal">on</span>( rule.dependencies(), rule )</pre></div>
+    <span class="property">@clear_all</span>()
+    <span class="keyword">for</span> name, rule <span class="keyword">of</span> <span class="property">@_rules</span>
+      <span class="property">@on</span>( rule.dependencies(), rule )</pre></div>
         
       
         
@@ -82,8 +107,8 @@ and save it as a singleton</p>
 
         
           <div class='highlight'><pre>  constructor: ( <span class="property">@name</span>, <span class="property">@_fn</span> ) -&gt;
-    Rule._rules ?= {}
-    Rule._rules[<span class="property">@name</span>] = <span class="keyword">this</span></pre></div>
+    <span class="property">@constructor</span>._rules ?= {}
+    <span class="property">@constructor</span>._rules[<span class="property">@name</span>] = <span class="keyword">this</span></pre></div>
         
       
         
@@ -96,7 +121,7 @@ and store it for later</p>
       fnStr = <span class="property">@_fn</span>.toString()
       params = fnStr.slice(fnStr.indexOf(<span class="string">'('</span>)+<span class="number">1</span>, fnStr.indexOf(<span class="string">')'</span>)).match(<span class="regexp">/([^\s,]+)/g</span>)
       <span class="keyword">if</span> params
-        <span class="property">@_dependencies</span> = (Rule.get(p) <span class="keyword">for</span> p <span class="keyword">in</span> params)
+        <span class="property">@_dependencies</span> = (<span class="property">@constructor</span>.get(p) <span class="keyword">for</span> p <span class="keyword">in</span> params)
       <span class="property">@_dependencies</span> = [] <span class="keyword">if</span> !<span class="property">@_dependencies</span>? <span class="keyword">or</span> <span class="literal">undefined</span> <span class="keyword">in</span> <span class="property">@_dependencies</span>
     <span class="keyword">return</span> <span class="property">@_dependencies</span></pre></div>
         
@@ -175,31 +200,6 @@ dependencies to check against this list</p>
 
         
           <div class='highlight'><pre>    <span class="property">@_fn</span>.apply( context, args )</pre></div>
-        
-      
-        
-        <h2>The Funnel Class</h2>
-
-        
-      
-        
-        <p>This is where the API and some of the setup for the rules live.</p>
-
-        
-          <div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">Funnel</span></span>
-  constructor: ( <span class="property">@rules</span> ) -&gt;
-    <span class="property">@rules</span>.<span class="function"><span class="title">input</span></span> = (arg) -&gt;
-      <span class="property">@return</span> arg
-    <span class="keyword">for</span> name, fn <span class="keyword">of</span> <span class="property">@rules</span>
-      rule = <span class="keyword">new</span> Rule( name, fn )
-      @[name] = ( args... ) -&gt; rule.run( args )
-    Rule.compile_all()
-    <span class="keyword">return</span>
-
-  listen: ( fn ) =&gt;
-    key = <span class="string">"_<span class="subst">#{Object.keys(@rules).length}</span>"</span>
-    <span class="keyword">new</span> Rule(key, fn)
-    Rule.compile_all()</pre></div>
         
       
         
