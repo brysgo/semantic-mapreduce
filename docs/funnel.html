@@ -32,7 +32,42 @@ is essential for the Funnel runtime.</p>
         <p>Get a rule that is already defined</p>
 
         
-          <div class='highlight'><pre>  <span class="property">@get</span>: ( <span class="property">@_name</span> ) -&gt; Rule._rules[<span class="property">@_name</span>]</pre></div>
+          <div class='highlight'><pre>  <span class="property">@get</span>: ( name ) -&gt; Rule._rules[name]</pre></div>
+        
+      
+        
+        <p>Allow other rules to register dependencies</p>
+
+        
+          <div class='highlight'><pre>  <span class="property">@on</span>: ( dependencies, rule ) -&gt;
+    [min,d] = [Infinity, <span class="literal">undefined</span>]
+    <span class="keyword">for</span> dependency <span class="keyword">in</span> dependencies
+      n = dependency.passes(dependencies)
+      <span class="keyword">if</span> n &gt; -<span class="number">1</span> <span class="keyword">and</span> n &lt; min
+        min = n
+        d = dependency
+    d.bind( rule ) <span class="keyword">if</span> min &gt; -<span class="number">1</span> <span class="keyword">and</span> min &lt; Infinity</pre></div>
+        
+      
+        
+        <p>Clear all the rules to recompile</p>
+
+        
+          <div class='highlight'><pre>  <span class="property">@clear_all</span>: -&gt;
+    <span class="keyword">for</span> name, rule <span class="keyword">of</span> Rule._rules
+      rule._dependencies = <span class="literal">undefined</span>
+      rule._passes = <span class="literal">undefined</span>
+      rule._bound = <span class="literal">undefined</span></pre></div>
+        
+      
+        
+        <p>Run the compile step</p>
+
+        
+          <div class='highlight'><pre>  <span class="property">@compile_all</span>: -&gt;
+    Rule.clear_all()
+    <span class="keyword">for</span> name, rule <span class="keyword">of</span> Rule._rules
+      Rule.<span class="literal">on</span>( rule.dependencies(), rule )</pre></div>
         
       
         
@@ -40,12 +75,9 @@ is essential for the Funnel runtime.</p>
 and save it as a singleton</p>
 
         
-          <div class='highlight'><pre>  constructor: ( <span class="property">@_name</span>, <span class="property">@_fn</span> ) -&gt;
+          <div class='highlight'><pre>  constructor: ( <span class="property">@name</span>, <span class="property">@_fn</span> ) -&gt;
     Rule._rules ?= {}
-    <span class="keyword">if</span> <span class="property">@_name</span> <span class="keyword">of</span> Rule._rules
-      <span class="keyword">throw</span> <span class="string">"FUNNEL ERROR: Rules can only be defined once"</span>
-    <span class="keyword">else</span>
-      Rule._rules[<span class="property">@_name</span>] = <span class="keyword">this</span></pre></div>
+    Rule._rules[<span class="property">@name</span>] = <span class="keyword">this</span></pre></div>
         
       
         
@@ -55,88 +87,109 @@ and store it for later</p>
         
           <div class='highlight'><pre>  dependencies: =&gt;
     <span class="keyword">unless</span> <span class="property">@_dependencies</span>?
-      reg = <span class="regexp">/\(([\s\S]*?)\)/</span>
-      params = reg.exec(<span class="property">@fn</span>)
-      <span class="property">@_dependencies</span> = params[<span class="number">1</span>].split(<span class="regexp">/\s*,\s*/</span>) <span class="keyword">if</span> params
+      fnStr = <span class="property">@_fn</span>.toString()
+      params = fnStr.slice(fnStr.indexOf(<span class="string">'('</span>)+<span class="number">1</span>, fnStr.indexOf(<span class="string">')'</span>)).match(<span class="regexp">/([^\s,]+)/g</span>)
+      <span class="keyword">if</span> params
+        <span class="property">@_dependencies</span> = (Rule.get(p) <span class="keyword">for</span> p <span class="keyword">in</span> params)
+      <span class="property">@_dependencies</span> = [] <span class="keyword">if</span> !<span class="property">@_dependencies</span>? <span class="keyword">or</span> <span class="literal">undefined</span> <span class="keyword">in</span> <span class="property">@_dependencies</span>
     <span class="keyword">return</span> <span class="property">@_dependencies</span></pre></div>
         
       
         
         <p>Get a list of all the dependencies that will be satisfied
-after this function is called</p>
+after this function is called, optionally pass a list of
+dependencies to check against this list</p>
 
         
-          <div class='highlight'><pre>  passes: =&gt;
+          <div class='highlight'><pre>  passes: ( dependencies=<span class="literal">undefined</span> ) =&gt;
     <span class="keyword">unless</span> <span class="property">@_passes</span>
       <span class="property">@_passes</span> = []
-      <span class="keyword">for</span> d <span class="keyword">in</span> <span class="property">@dependencies</span>
-        <span class="property">@_passes</span>.append(d)
-        d = Rule.get(d)
+      <span class="keyword">for</span> d <span class="keyword">in</span> <span class="property">@dependencies</span>()
+        <span class="property">@_passes</span>.push(d)
         <span class="property">@_passes</span>.concat(d.passes())
-    <span class="keyword">return</span> <span class="property">@_passes</span></pre></div>
+      <span class="property">@_passes</span>.push(@)
+    <span class="keyword">return</span> <span class="property">@_passes</span> <span class="keyword">unless</span> dependencies?</pre></div>
         
       
         
-        <p>Get a list of all the rules who&#39;s dependencies are satisfied
-by this rule</p>
+        <p>Check if dependancies are passed</p>
 
         
-          <div class='highlight'><pre>  satisfies: =&gt;</pre></div>
+          <div class='highlight'><pre>    <span class="keyword">return</span> -<span class="number">1</span> <span class="keyword">if</span> <span class="property">@_passes</span>.length <span class="keyword">is</span> <span class="number">0</span>
+    <span class="keyword">for</span> dependency <span class="keyword">in</span> <span class="property">@dependencies</span>()
+      <span class="keyword">return</span> -<span class="number">1</span> <span class="keyword">unless</span> dependency <span class="keyword">in</span> <span class="property">@_passes</span>
+    <span class="keyword">return</span> <span class="property">@_passes</span>.length</pre></div>
+        
+      
+        
+        <p>Allow rules to bind to this rule&#39;s completion</p>
+
+        
+          <div class='highlight'><pre>  bind: ( rule ) =&gt;
+    <span class="property">@_bound</span> ?= []
+    <span class="property">@_bound</span>.push(rule)</pre></div>
         
       
         
         <p>Run this rule and trigger the next ones</p>
 
         
-          <div class='highlight'><pre>  run: =&gt;
+          <div class='highlight'><pre>  run: ( args ) =&gt;</pre></div>
+        
+      
+        
+        <p>Accept either a result hash or an argument list</p>
 
+        
+          <div class='highlight'><pre>    results = <span class="literal">undefined</span>
+    d = <span class="property">@dependencies</span>()
+    <span class="keyword">if</span> args
+      <span class="keyword">if</span> Object::toString.call(args) == <span class="string">'[object Array]'</span>
+        results = {}
+        results[name] = args[i] <span class="keyword">for</span> name, i <span class="keyword">in</span> d
+      <span class="keyword">else</span>
+        results = args
+        args = (args[x.name] <span class="keyword">for</span> x <span class="keyword">in</span> d)</pre></div>
+        
+      
+        
+        <p>Create the run context</p>
 
+        
+          <div class='highlight'><pre>    context =
+      <span class="keyword">return</span>: (val) =&gt;
+        results_ = JSON.parse(JSON.stringify(results))
+        results_[ <span class="property">@name</span> ] = val
+        <span class="property">@_bound</span> ?= []
+        rule.run( results_ ) <span class="keyword">for</span> rule <span class="keyword">in</span> <span class="property">@_bound</span></pre></div>
+        
+      
+        
+        <p>Run the rule</p>
 
-<span class="class"><span class="keyword">class</span> <span class="title">Funnel</span></span>
+        
+          <div class='highlight'><pre>    <span class="property">@_fn</span>.apply( context, args )</pre></div>
+        
+      
+        
+        <h1>The Funnel Class</h1>
+<p>This is where the API and some of the setup for the rules live.</p>
+
+        
+          <div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">Funnel</span></span>
   constructor: ( <span class="property">@rules</span> ) -&gt;
-    <span class="property">@rules</span>.<span class="function"><span class="title">input</span></span> = (arg) -&gt; <span class="property">@return</span> arg
-    <span class="property">@compile</span>()
+    <span class="property">@rules</span>.<span class="function"><span class="title">input</span></span> = (arg) -&gt; 
+      <span class="property">@return</span> arg
+    <span class="keyword">for</span> name, fn <span class="keyword">of</span> <span class="property">@rules</span>
+      rule = <span class="keyword">new</span> Rule( name, fn )
+      @[name] = ( args... ) -&gt; rule.run( args )
+    Rule.compile_all()
+    <span class="keyword">return</span>
 
   listen: ( fn ) =&gt;
     key = <span class="string">"_<span class="subst">#{Object.keys(@rules).length}</span>"</span>
-    <span class="property">@rules</span>[key] = fn
-    <span class="property">@compile</span>()
-
-  compile: =&gt;
-    <span class="property">@rules_by_lca</span> = {}
-    <span class="keyword">for</span> name, fn <span class="keyword">of</span> <span class="property">@rules</span>
-      @[name] = ( args... ) =&gt;
-        deps = {}
-        <span class="keyword">for</span> a,i <span class="keyword">in</span> <span class="property">@arg_names</span>( fn )
-          deps[a] = args[i]
-        <span class="property">@run</span>( name, deps )
-      lca = <span class="property">@lca</span>( <span class="property">@arg_names</span>( fn )... )
-      <span class="property">@rules_by_lca</span>[lca] ?= []
-      <span class="property">@rules_by_lca</span>[lca].push(name)
-
-  run: ( name, deps ) -&gt;
-    ndeps = JSON.parse(JSON.stringify(deps))
-    deps[ name ] ?= []
-    a = <span class="property">@arg_names</span>( <span class="property">@rules</span>[ name ] )
-    args = (deps[i] <span class="keyword">for</span> i <span class="keyword">in</span> a)
-    <span class="keyword">return</span> <span class="literal">false</span> <span class="keyword">if</span> <span class="literal">undefined</span> <span class="keyword">in</span> args
-    rules_to_rerun = []
-    context =
-      <span class="keyword">return</span>: (val) =&gt;
-        ndeps = JSON.parse(JSON.stringify(ndeps))
-        ndeps[ name ] = val
-        deps[ name ].push val
-        <span class="keyword">for</span> n <span class="keyword">in</span> <span class="property">@rules_by_lca</span>[ name ] || []
-          <span class="keyword">if</span> <span class="property">@run</span>( n, ndeps )
-            deps.extend( ndeps )
-          <span class="keyword">else</span>
-            rules_to_rerun.push(n)
-
-
-    <span class="property">@rules</span>[ name ].apply( context, args )
-    <span class="property">@run</span>( n, deps ) <span class="keyword">for</span> n <span class="keyword">in</span> rules_to_rerun
-
-    <span class="keyword">return</span> <span class="literal">true</span></pre></div>
+    <span class="keyword">new</span> Rule(key, fn)
+    Rule.compile_all()</pre></div>
         
       
         
@@ -144,11 +197,7 @@ by this rule</p>
 
         
           <div class='highlight'><pre>Array::<span class="function"><span class="title">remove</span></span> = (object) -&gt; <span class="property">@splice</span>(<span class="property">@indexOf</span>(object), <span class="number">1</span>)
-Array::<span class="function"><span class="title">clone</span></span> = -&gt; @[..]
-Object::<span class="function"><span class="title">extend</span></span> = (objects...) -&gt;
-  <span class="keyword">for</span> object <span class="keyword">in</span> objects
-    <span class="keyword">for</span> key, value <span class="keyword">of</span> object
-      @[key] = value <span class="keyword">unless</span> @[key]?</pre></div>
+Array::<span class="function"><span class="title">clone</span></span> = -&gt; @[..]</pre></div>
         
       
         
