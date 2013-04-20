@@ -3,19 +3,22 @@ log = console.log
 
 task 'build', ->
   run 'coffee -o lib -c src/*.*coffee'
+  
+task 'watch', ->
+  run 'coffee --watch -o lib -c src/*.*coffee'
 
 task 'spec', ->
+  run('coffee --watch -o lib -c src/*.*coffee')
   run('python -m SimpleHTTPServer')
   run('open http://localhost:8000/lib/SpecRunner.html')
 
 task 'docs', ->
-  run('docco --layout \'linear\' src/funnel.litcoffee', ->
-    run('git checkout gh-pages', ->
-      run('git checkout master -- docs', ->
-        run('git commit -m\'Generate the docs\'')
-      )
-    )
-  )
+  run 'docco --layout \'linear\' src/funnel.coffee', ->
+    run 'git add . && git commit -mWIP', ->
+      run 'git checkout gh-pages', ->
+        run 'git checkout master -- docs', ->
+          run 'git commit -m\'Generate the docs\'', ->
+            run 'git checkout master && git reset HEAD^'
 
 run = (args...) ->
   for a in args
