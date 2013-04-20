@@ -9,48 +9,97 @@ Right now only a rudimentary serial implementation exists, but the ambition is t
 
 The design goals below all yeild to the main goal of making large scale data driven apps dead simple to write and maintain. That being said, to make it easier to get there a few principles must be followed as closely as possible.
 
-### Simplicity
+### 1) Simplicity
 
-I will probably use the term scalable simplicity a lot, the reason for this is that there are a ton of
-programming paradigms out there that are simple. Object oriented programming is simple, but once you grow your OO software to a large suite the simplicity fades fast.
+Funnel is declarative and prefers convention over configuration. This way you describe your system and it figures out what to do.
 
-Now nothing is going to change the fact that enormous software suites are complex and take a long time to learn. This is the reason splitting up large code bases is good, however, there may be a better way to limit the complexity of the software to the complexity of the domain. Instead of increasing the technological  complexity at a rate equal to the domain complexity, funnel intends to limit the learning curve to the  complexity of the domain.
+### 2) Scalability
 
-### Scalability
+Funnel breaks your program into small discrete chunks that are perfect for sharding and distributing.
 
-I touch on this in the section above but it is important enough for its own section. Writing code in funnel should be the same whether you are running it on one server or a million. This is an extremely ambitious goal that I'm sure will have to be compromised slightly, but I want to be clear about the guiding star.
+### 3) Testability
 
-### Testability
-
-Knowing when, what, why your code does not work is of the utmost importance.
-
-### Flexibility
-
-I am a strong believer in the agile process, and to me, it is extremely valuable for a code base to be able to pivot. One of the things I want to be sure of when designing funnel is that it is easy to make changes.
+It just so happens that those small chunks are very easy to test.
 
 ## Getting Started
 
 ### Try it out
 
-Check out the documentation [here](http://brysgo.github.io/funnel/).
+Check out the annotated source [here](http://brysgo.github.io/funnel/docs/funnel.html).
+
+#### Rules
+
+What makes a rule different from a function?
+
+When I am defining a rule, the name of the arguments matter.
+
+In fact, Funnel uses the names of the arguments to figure out what values to pass it.
+
+When a funnel rule is done running, it knows what rules to call next because the arguments say which rules depend on it.
+
+#### Funnel
+
+The funnel object holds all the rules and is the gateway between your front end and your funnel.
+
+##### Give input
+
+Input can be given either by calling the reserved `input` rule with your input 
+
+*or*
+
+By calling the rule of your choosing directly with the right arguments.
+
+Be carefull when calling a rule that is in the middle of the dependency tree (see section below for details).
+
+##### Listen to output
+
+By calling `listen` on a funnel object, you can pass a rule that will be anonymous. These anonymous rules can be easily hooked up to your views.
+
+### The Bleeding Edge
+
+#### The `@return` (IMPLEMENTED)
+
+In the previous implementation rules returned their output like a normal function does.
+We knew output needed to be mapped if we weren't in a reduce and we returned an array.
+
+The days of weird array vs. non-array return values are over. The new `@return` statement lets
+you return as many things from the same function as you please. Furthermore, regular return statements
+will still break out of the functions, but their value will be ignored.
+
+#### The `self` keyword (PLANNED)
+
+A rule can't depend on itself, however, it is also called once for every set of dependencies returned. How is one supposed
+to reduce data if a rule can't see what it returned previously.
+
+In the previous implementation we just passed around arrays. So when a rule was doing reducing, it just got an array of its
+dependencies' results. That can be pretty inefficient if you are just trying to calculate something from the results and not
+planning on returning the whole array.
+
+Now that we are calling once with every output, we have introduced the `self` keyword. When a rule depends on `self` it is passed the result of its last execution
+in scope, or if it is keyed it gets the result of the last execution with a matching key.
+
+#### Persistence with the `$` prefix (PLANNED)
+
+A `$` prefix when naming dependencies (aka. arguments) will denote that the rule should be keyed on that dependency.
+
+For example:
 
 ```coffeescript
-obj.input( 'pass a string to the existing object to test the example' )
+  rulename: (dep0, $keyeddep1, $keyeddep2, self) ->
 ```
+After this rule runs, its result will be stored in a key-value store with the key `rulename_keyeddep1_keyeddep2`
 
-You can also try writing your own funnel code, its easy.
+Before the rule runs, a key-value query will check to see if the above key exists and use it as `self`.
 
-```coffeescript
-my_funnel = new Funnel(
-  brick: (input) -> # make the input into a brick
-  morter: (input) -> # make the input into morter
-  wall: (brick,morter) -> # make a new wall from brick and morter
-)
+#### Call a rule in the middle of the dependency tree (NOT RECOMMENDED)
 
-my_funnel.listen( (wall) ->
-  # update your view when a new wall is created
-)
-```
+If for some reason you have a rule that is in the middle of the dependency and you really need to call it, all of the rules that
+depend on it may need the results of executing all the rules higher up in the tree.
+
+Fortunatly for you, or unfortunately because why are you doing this, you can call a rule with more arguments then it takes by passing an
+object where the keys are the names of the dependencies and the values are what they have supposedly returned from being called.
+
+This may be helpful for testing or playing around or whatever, so I figured I would document it.
 
 ### Contribute
 
