@@ -63,7 +63,8 @@ class Funnel::Rule
   dependencies: =>
     unless @_dependencies?
       fnStr = @_fn.toString()
-      params = fnStr.slice(fnStr.indexOf('(')+1, fnStr.indexOf(')')).match(/([^\s,]+)/g)
+      params = fnStr.slice(fnStr.indexOf('(')+1, fnStr.indexOf(')'))
+      params = params.match(/([^\s,]+)/g)
       if params
         @_dependencies = (@constructor.get(p) for p in params)
       @_dependencies = [] if !@_dependencies? or undefined in @_dependencies

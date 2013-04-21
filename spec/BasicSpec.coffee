@@ -7,22 +7,30 @@ describe "A basic funnel", ->
     beforeEach ->
       # Create our funnel
       funnel = new Funnel(
-        # in this case only one rule depends on our 'input' - a reserved rule
+        # in this case only one rule depends on our `input` - a reserved rule
         word: (input) ->
+          # notice how we are returning multiple times in the same function
           @return word for word in input.split(' ')
-        # 'char' depends on 'word', and splits them up into individual charicters
-        # notice how we are returning multiple times in the same function
+
+        # `char` depends on `word`, returning charicters
         char: (word) ->
           @return char for char in word
-        # 'vowel' depends on 'char' and returns a boolean
+
+        # `vowel` depends on `char` and returns a boolean
         vowel: (char) ->
           @return char.toLowerCase() in ['a','e','i','o','u']
-        ## 'word_has_vowel' depends on 'word' and 'vowel'
-        #word_has_vowel: (self, word, vowel) ->
-          ## notice that vowel is a list of bools now
-          ## this is because by the time the least common ancestor of 'word'
-          ## and 'vowel' ('word') run, there are multiple values for 'vowel'
-          #@return self && vowel
+
+        # `word_has_vowel` depends on `word` and `vowel`
+        # it also has the special dependency `self`
+        # it is keyed on `word`
+        word_has_vowel: (self, $word, vowel) ->
+          @return self || vowel
+
+        # `word_has_vowel` depends on `input` and `word_has_vowel`
+        # it is keyed on `input`
+        not_english: (self, $input, word_has_vowel) ->
+          @return self && word_has_vowel
+
       )
 
     it "should call `word` with every string sent to `input`", ->
