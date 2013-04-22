@@ -119,7 +119,8 @@ and store it for later</p>
           <div class='highlight'><pre>  dependencies: =&gt;
     <span class="keyword">unless</span> <span class="property">@_dependencies</span>?
       fnStr = <span class="property">@_fn</span>.toString()
-      params = fnStr.slice(fnStr.indexOf(<span class="string">'('</span>)+<span class="number">1</span>, fnStr.indexOf(<span class="string">')'</span>)).match(<span class="regexp">/([^\s,]+)/g</span>)
+      params = fnStr.slice(fnStr.indexOf(<span class="string">'('</span>)+<span class="number">1</span>, fnStr.indexOf(<span class="string">')'</span>))
+      params = params.match(<span class="regexp">/([^\s,]+)/g</span>)
       <span class="keyword">if</span> params
         <span class="property">@_dependencies</span> = (<span class="property">@constructor</span>.get(p) <span class="keyword">for</span> p <span class="keyword">in</span> params)
       <span class="property">@_dependencies</span> = [] <span class="keyword">if</span> !<span class="property">@_dependencies</span>? <span class="keyword">or</span> <span class="literal">undefined</span> <span class="keyword">in</span> <span class="property">@_dependencies</span>
@@ -147,7 +148,7 @@ dependencies to check against this list</p>
 
         
           <div class='highlight'><pre>    <span class="keyword">return</span> -<span class="number">1</span> <span class="keyword">if</span> <span class="property">@_passes</span>.length <span class="keyword">is</span> <span class="number">0</span>
-    <span class="keyword">for</span> dependency <span class="keyword">in</span> <span class="property">@dependencies</span>()
+    <span class="keyword">for</span> dependency <span class="keyword">in</span> dependencies
       <span class="keyword">return</span> -<span class="number">1</span> <span class="keyword">unless</span> dependency <span class="keyword">in</span> <span class="property">@_passes</span>
     <span class="keyword">return</span> <span class="property">@_passes</span>.length</pre></div>
         

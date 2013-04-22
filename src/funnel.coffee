@@ -84,7 +84,7 @@ class Funnel::Rule
 
     # Check if dependancies are passed
     return -1 if @_passes.length is 0
-    for dependency in @dependencies()
+    for dependency in dependencies
       return -1 unless dependency in @_passes
     return @_passes.length
 
