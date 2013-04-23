@@ -1,4 +1,25 @@
 #
+# The Datastore Class
+# -------------------
+# The datastore class provides persistence to Funnel and will
+# hopefully have adaptors for all your favorite datastores.
+
+class Datastore
+
+  constructor: ->
+    @constructor._self = @
+    @_object = {}
+
+  @connect: =>
+    return @_self if @_self
+    return new Datastore()
+
+  set: (key, value) =>
+    @_object[key] = value
+
+  get: (key) => @_object[key]
+
+#
 # The Rule Class
 # --------------
 # The rule class is a singleton that is created for every new
@@ -19,6 +40,7 @@ class Rule
   # Construct a new rule
   # and save it as a singleton
   constructor: ( @name, @_fn ) ->
+    @_datastore = Datastore.connect()
 
   # Get the rules dependancies from the function's code
   # and store it for later
@@ -27,9 +49,19 @@ class Rule
       fnStr = @_fn.toString()
       params = fnStr.slice(fnStr.indexOf('(')+1, fnStr.indexOf(')'))
       params = params.match(/([^\s,]+)/g)
-      if params
-        @_dependencies = (@constructor.get(p) for p in params)
-      @_dependencies = [] if !@_dependencies? or undefined in @_dependencies
+      @_dependencies = []
+      @_keys = []
+      for p in params
+        keyed = false
+        if p[0] == '$'
+          keyed = true
+          p = p[1..]
+        p = @name if p == 'self'
+        p = @constructor.get(p)
+        if p == undefined
+          return @_dependencies = []
+        @_keys.push(@_dependencies.length) if keyed
+        @_dependencies.push(p)
     return @_dependencies
 
   # Get a list of all the dependencies that will be satisfied
@@ -50,6 +82,9 @@ class Rule
       return -1 unless dependency in @_passes
     return @_passes.length
 
+  # Return the key for a particular rule run
+  key: (args) => "#{[@name].concat((args[i] for i in @_keys)).join('_')}"
+
   # Allow rules to bind to this rule's completion
   bind: ( rule ) =>
     @_bound ?= []
@@ -67,11 +102,15 @@ class Rule
       else
         results = args
         args = (args[x.name] for x in d)
+    for dep,i in d
+      console.log @key(args)
+      args[i] = @_datastore.get( @key(args) ) if dep == @
     # Create the run context
     context =
       return: (val) =>
         results_ = JSON.parse(JSON.stringify(results))
         results_[ @name ] = val
+        @_datastore.set( @key(args), val )
         @_bound ?= []
         rule.run( results_ ) for rule in @_bound
     # Run the rule

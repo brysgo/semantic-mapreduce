@@ -22,12 +22,17 @@ class Funnel
   # Allow other rules to register dependencies
   on: ( dependencies, rule ) ->
     [min,d] = [Infinity, undefined]
+    if rule in dependencies
+      i = dependencies.indexOf(rule)
+      dependencies = dependencies[...i].concat(dependencies[i+1..])
+      console.log dependencies
     for dependency in dependencies
       n = dependency.passes(dependencies)
       if n > -1 and n < min
         min = n
         d = dependency
-    d.bind( rule ) if min > -1 and min < Infinity
+    if min > -1 and min < Infinity
+      d.bind( rule )
 
   # Compile current set of rules
   compile: ->
@@ -42,13 +47,6 @@ class Funnel
     @_rules[name] = rule
     rule.constructor.f = @
     return rule
-
-
-
-#### Helpers
-
-Array::remove = (object) -> @splice(@indexOf(object), 1)
-Array::clone = -> @[..]
 
 #### Export Funnel
 

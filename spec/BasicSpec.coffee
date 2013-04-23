@@ -85,7 +85,7 @@ describe "A basic funnel", ->
 
     describe "non-persisted rules", ->
 
-      xit "initially sets `self` to `undefined` even if input is repeated", ->
+      it "initially sets `self` to `undefined` even if input is repeated", ->
         funnel.listen( (self, $input) ->
           count += 1
           expect(self).toBeUndefined()
@@ -101,7 +101,7 @@ describe "A basic funnel", ->
 
     describe "persisted rules", ->
 
-      xit "keeps self the same if there are no keyed inputs", ->
+      it "keeps self the same if there are no keyed inputs", ->
         funnel.listen( (word_count) ->
           count += 1
           expect(word_count).toEqual count
@@ -112,7 +112,7 @@ describe "A basic funnel", ->
 
         expect(count).toEqual 2
       
-      xit "keep self the same when keyed inputs match", ->
+      it "keep self the same when keyed inputs match", ->
         funnel.listen( (word_frequency) ->
           expect(word_frequency).toEqual parseInt(count/4)+1
           count += 1
