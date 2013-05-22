@@ -5,36 +5,36 @@ describe "A basic funnel", ->
   rules =
     # in this case only one rule depends on our `input` - a reserved rule
     word: (input) ->
-      # notice how we are returning multiple times in the same function
-      @return word for word in input.split(' ')
+      # we emit each word in the input
+      @emit word for word in input.split(' ')
 
     # keep track of how many words have been passed into this funnel
     $word_count: (self, word) ->
-      @return if self then self + 1 else 1
+      @emit if self then self + 1 else 1
 
     # keep track of how many times each word has been passed in to this funnel
     $word_frequency: (self, $word) ->
-      @return if self then self + 1 else 1
+      @emit if self then self + 1 else 1
 
-    # `char` depends on `word`, returning charicters
+    # `char` depends on `word`, emitting charicters
     char: (word) ->
-      @return char for char in word
+      @emit char for char in word
 
-    # `vowel` depends on `char` and returns a boolean
+    # `vowel` depends on `char` and emits a boolean
     vowel: (char) ->
-      @return char.toLowerCase() in ['a','e','i','o','u']
+      @emit char.toLowerCase() in ['a','e','i','o','u']
 
     # `word_has_vowel` depends on `word` and `vowel`
     # it also has the special dependency `self`
     # it is keyed on `word`
     word_has_vowel: (self, $word, vowel) ->
-      @return self || vowel
+      @emit self || vowel
 
     # `word_has_vowel` depends on `input` and `word_has_vowel`
     # it is keyed on `input`
     not_english: (self, $input, word_has_vowel) ->
       self ?= true
-      @return self && word_has_vowel
+      @emit self && word_has_vowel
 
   beforeEach ->
     # Create our funnel
@@ -89,7 +89,7 @@ describe "A basic funnel", ->
         funnel.listen( (self, $input) ->
           count += 1
           expect(self).toBeUndefined()
-          @return "Just listened to: #{$input}!"
+          @emit "Just listened to: #{$input}!"
         )
 
         funnel.input('blarg')

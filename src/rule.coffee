@@ -69,7 +69,7 @@ class Rule
         args = (args[x.name] for x in d)
     # Create the run context
     context =
-      return: (val) =>
+      emit: (val) =>
         results_ = JSON.parse(JSON.stringify(results))
         results_[ @name ] = val
         @_bound ?= []

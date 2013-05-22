@@ -7,7 +7,7 @@ class Funnel
   constructor: ( rules={} ) ->
     @_rules = {}
     rules.input = (arg) ->
-      @return arg
+      @emit arg
     for name, fn of rules
       rule = @rule(name, fn )
       @[name] = ( args... ) -> rule.run( args )

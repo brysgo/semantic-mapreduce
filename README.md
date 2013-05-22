@@ -5,22 +5,6 @@ Funnel.js is a funky hybrid between an event loop and a map-reduce implementatio
 The main use-case is to untangle complex buisness logic into something far more simple and expressive than our massive OO code bases usually end up being.
 Right now only a rudimentary serial implementation exists, but the ambition is to someday have it scale across machines and handle things like server-client communication and persistance.
 
-## Design Goals
-
-The design goals below all yeild to the main goal of making large scale data driven apps dead simple to write and maintain. That being said, to make it easier to get there a few principles must be followed as closely as possible.
-
-### 1) Simplicity
-
-Funnel is declarative and prefers convention over configuration. This way you describe your system and it figures out what to do.
-
-### 2) Scalability
-
-Funnel breaks your program into small discrete chunks that are perfect for sharding and distributing.
-
-### 3) Testability
-
-It just so happens that those small chunks are very easy to test.
-
 ## Getting Started
 
 ### Try it out
@@ -57,23 +41,23 @@ By calling `listen` on a funnel object, you can pass a rule that will be anonymo
 
 ### The Bleeding Edge
 
-#### The `@return` (IMPLEMENTED)
+#### The `@emit` (IMPLEMENTED)
 
-In the previous implementation rules returned their output like a normal function does.
-We knew output needed to be mapped if we weren't in a reduce and we returned an array.
+In the previous implementation rules emitted their output like a normal function does.
+We knew output needed to be mapped if we weren't in a reduce and we emitted an array.
 
-The days of weird array vs. non-array return values are over. The new `@return` statement lets
-you return as many things from the same function as you please. Furthermore, regular return statements
+The days of weird array vs. non-array emit values are over. The new `@emit` statement lets
+you emit as many things from the same function as you please. Furthermore, regular emit statements
 will still break out of the functions, but their value will be ignored.
 
 #### The `self` keyword (PLANNED)
 
-A rule can't depend on itself, however, it is also called once for every set of dependencies returned. How is one supposed
-to reduce data if a rule can't see what it returned previously.
+A rule can't depend on itself, but it is called once for every set of dependencies emitted. How is one supposed
+to reduce data if a rule can't see what it emitted previously.
 
 In the previous implementation we just passed around arrays. So when a rule was doing reducing, it just got an array of its
 dependencies' results. That can be pretty inefficient if you are just trying to calculate something from the results and not
-planning on returning the whole array.
+planning on emitting the whole array.
 
 Now that we are calling once with every output, we have introduced the `self` keyword. When a rule depends on `self` it is passed the result of its last execution
 in scope, or if it is keyed it gets the result of the last execution with a matching key.
@@ -97,7 +81,7 @@ If for some reason you have a rule that is in the middle of the dependency and y
 depend on it may need the results of executing all the rules higher up in the tree.
 
 Fortunatly for you, or unfortunately because why are you doing this, you can call a rule with more arguments then it takes by passing an
-object where the keys are the names of the dependencies and the values are what they have supposedly returned from being called.
+object where the keys are the names of the dependencies and the values are what they have supposedly emitted from being called.
 
 This may be helpful for testing or playing around or whatever, so I figured I would document it.
 
