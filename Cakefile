@@ -17,10 +17,10 @@ task 'docs', ->
 
 task 'docs:commit', ->
   run 'cake docs', ->
-    run 'git checkout gh-pages', ->
-      run 'git checkout master -- docs', ->
-        run 'git commit -m\'Generate the docs\'', ->
-          run 'git checkout master && git reset HEAD^'
+    run 'cp -R docs ../funnel_docs', ->
+      run 'git checkout gh-pages', ->
+        run 'rm -rf docs && mv ../funnel_docs/ docs', ->
+          run 'git commit -am\'Generate the docs\'', ->
 
 run = (args...) ->
   for a in args
