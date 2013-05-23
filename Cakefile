@@ -17,11 +17,10 @@ task 'docs', ->
 
 task 'docs:commit', ->
   run 'cake docs', ->
-    run 'git add . && git commit -mWIP', ->
-      run 'git checkout gh-pages', ->
-        run 'git checkout master -- docs', ->
-          run 'git commit -m\'Generate the docs\'', ->
-            run 'git checkout master && git reset HEAD^'
+    run 'git checkout gh-pages', ->
+      run 'git checkout master -- docs', ->
+        run 'git commit -m\'Generate the docs\'', ->
+          run 'git checkout master && git reset HEAD^'
 
 run = (args...) ->
   for a in args
