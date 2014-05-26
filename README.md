@@ -19,7 +19,11 @@ When I am defining a rule, the name of the arguments matter.
 
 In fact, Funnel uses the names of the arguments to figure out what values to pass it.
 
+Some of you may recognize this technique from AngularJS dependency injection.
+
 When a funnel rule is done running, it knows what rules to call next because the arguments say which rules depend on it.
+
+Unlike dependency injection, rules can continue to emit results and dependant rules will continue to recieve them.
 
 #### Funnel
 
