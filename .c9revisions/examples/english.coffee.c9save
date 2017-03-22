@@ -22,3 +22,5 @@
 {"ts":1364782727526,"patch":[[{"diffs":[[-1,"Funnel = "],[0,"requ"]],"start1":0,"start2":0,"length1":13,"length2":4},{"diffs":[[0,"ole.log "],[-1,"Funnel"],[1,"@"],[0,"\n# Creat"]],"start1":29,"start2":29,"length1":22,"length2":17}]],"length":1051,"saved":false}
 {"ts":1364782762594,"patch":[[{"diffs":[[1,"Funnel = "],[0,"require("]],"start1":0,"start2":0,"length1":8,"length2":17},{"diffs":[[0,"el\")"],[-1,"\nconsole.log @"],[1,".Funnel\n"],[0,"\n# C"]],"start1":29,"start2":29,"length1":22,"length2":16}]],"length":1054,"saved":false}
 {"ts":1364783001813,"patch":[[{"diffs":[[0,"el\")"],[-1,".Funnel"],[0,"\n\n# "]],"start1":29,"start2":29,"length1":15,"length2":8}]],"length":1047,"saved":false}
+{"contributors":[],"silentsave":true,"ts":1365207833773,"patch":[[{"diffs":[[0,"\"../"],[-1,"lib"],[1,"src"],[0,"/fun"]],"start1":17,"start2":17,"length1":11,"length2":11},{"diffs":[[0,"rt strng.' )"],[1,"\n"]],"start1":1035,"start2":1035,"length1":12,"length2":13}]],"length":1048,"saved":false}
+{"ts":1365207836167,"patch":[[{"diffs":[[0,"t strng.' )\n"],[1,"\ndebugger"]],"start1":1036,"start2":1036,"length1":12,"length2":21}]],"length":1057,"saved":false}
