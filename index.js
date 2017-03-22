@@ -10,7 +10,7 @@ class Funnel {
     this.listen = this.listen.bind(this);
     if (rules == null) { rules = {}; }
     this._rules = {};
-    rules.input = function(arg) {
+    rules.input = function*(arg) {
       return this.emit(arg);
     };
     for (let name in rules) {

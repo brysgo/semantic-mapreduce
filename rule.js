@@ -87,7 +87,6 @@ class Rule {
         args = (Array.from(d).map((x) => args[x.name]));
       }
     }
-    // Create the run context
     let context = {
       emit: val => {
         let results_ = JSON.parse(JSON.stringify(results));
@@ -97,7 +96,9 @@ class Rule {
       }
     };
     // Run the rule
-    return this._fn.apply( context, args );
+    for (let val of this._fn.apply(context, args)) {
+      context.emit(val);
+    }
   }
 }
 
