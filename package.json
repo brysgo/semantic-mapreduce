@@ -5,5 +5,11 @@
   "main": "index.js",
   "repository": "git@github.com:brysgo/semantic-mapreduce.git",
   "author": "Bryan Goldstein <brysgo@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^19.0.2"
+  }
 }
