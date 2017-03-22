@@ -96,8 +96,11 @@ class Rule {
       }
     };
     // Run the rule
-    for (let val of this._fn.apply(context, args)) {
-      context.emit(val);
+    const iter = this._fn.apply(context, args);
+    if (iter && typeof iter[Symbol.iterator] === 'function') {
+      for (let val of iter) {
+        context.emit(val);
+      }
     }
   }
 }
